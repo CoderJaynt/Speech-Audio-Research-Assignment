@@ -28,6 +28,7 @@
 ## 📋 Table of Contents
 
 - [✨ Project Overview](#-project-overview)
+- [📂 Dataset](#-dataset)
 - [🏗️ System Architecture](#️-system-architecture)
 - [📊 Phase 1 — ASR Pipeline & Fine-Tuning](#-phase-1--asr-pipeline--fine-tuning)
 - [🧹 Phase 2 — Post-Processing & NLP Pipeline](#-phase-2--post-processing--nlp-pipeline)
@@ -65,6 +66,23 @@ Hindi is a low-resource language for ASR. Off-the-shelf models like Whisper, des
 
 ---
 
+## 📂 Dataset
+
+The model was fine-tuned on **~10 hours of Hindi conversational speech data** (`FT Data - data.csv`), included in this repository.
+
+Each record contains:
+- 🎙️ **Audio** — Hindi conversational speech recordings
+- 📝 **Transcription metadata** — Human-annotated Devanagari transcriptions with segment-level timestamps
+
+**Preprocessing applied before training:**
+- Duration filtering (1–30 second segments only)
+- Unicode NFC normalization for consistent Devanagari representation
+- Whitespace cleanup and trivial transcription removal
+- Resampling to 16kHz mono WAV
+- Speaker-aware train/validation split (90/10, stratified by speaker, `seed=42`)
+
+---
+
 ## 🏗️ System Architecture
 
 ```
@@ -72,7 +90,7 @@ Hindi is a low-resource language for ASR. Off-the-shelf models like Whisper, des
 │                       Hindi ASR Pipeline                            │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│   Raw Audio                                                         │
+│   Raw Audio + FT Data - data.csv                                    │
 │        │                                                            │
 │        ▼                                                            │
 │   ┌──────────┐    ┌──────────────┐    ┌─────────────────────┐      │
@@ -113,19 +131,6 @@ Hindi is a low-resource language for ASR. Off-the-shelf models like Whisper, des
 ## 📊 Phase 1 — ASR Pipeline & Fine-Tuning
 
 **Notebook:** `Whisper_Model_training___evaluation.ipynb`
-
-### Data Preprocessing
-
-A ~10-hour Hindi conversational speech dataset was used for fine-tuning.
-
-**Preprocessing steps applied:**
-
-1. **Duration Filtering** — Segments outside 1–30 seconds removed
-2. **Empty/Trivial Removal** — Transcriptions with ≤1 character discarded
-3. **Unicode Normalization** — NFC normalization for consistent Devanagari representation
-4. **Whitespace Cleanup** — Multiple spaces collapsed; leading/trailing whitespace stripped
-5. **Audio Processing** — Sliced using timestamps, resampled to 16kHz mono WAV
-6. **Speaker-Aware Split** — 10% of unique speakers held out for validation (stratified, `seed=42`)
 
 ### Fine-Tuning Configuration
 
@@ -173,7 +178,7 @@ After systematically sampling 25+ error utterances:
 
 ## 🧹 Phase 2 — Post-Processing & NLP Pipeline
 
-**Notebook:** `Hindi_ASR_Q2_Post_processing___NLP_pipeline.ipynb`
+**Notebook:** `Hindi_ASR_Post_processing_NLP.ipynb`
 
 ### a) Number Normalization
 
@@ -217,7 +222,7 @@ Output: "मेरा [EN]इंटरव्यू[/EN] बहुत अच्�
 
 ## 🧠 Phase 3 — Word-Level Classification
 
-**Notebook:** `Hindi_ASR_Q3_Word_Classification.ipynb`
+**Notebook:** `Hindi_ASR_Word_Classification.ipynb`
 
 ### Objective
 
@@ -254,7 +259,7 @@ Word Input
 
 ## 🔬 Phase 4 — Lattice-Based Evaluation
 
-**Notebook:** `Hindi_ASR_Q4.ipynb`
+**Notebook:** `Hindi_ASR_Lattice_Evaluation.ipynb`
 
 ### The Problem with Standard WER
 
@@ -336,17 +341,17 @@ apt-get install ffmpeg
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/CoderJaynt/Hindi-ASR-Whisper.git
-cd Hindi-ASR-Whisper
+git clone https://github.com/CoderJaynt/Speech-Audio-Research-Assignment.git
+cd Speech-Audio-Research-Assignment
 ```
 
 ### Run Notebooks in Order
 
 ```
-1. Whisper_Model_training___evaluation.ipynb          ← Phase 1: Fine-tune & evaluate
-2. Hindi_ASR_Q2_Post_processing___NLP_pipeline.ipynb  ← Phase 2: Cleanup pipeline
-3. Hindi_ASR_Q3_Word_Classification.ipynb             ← Phase 3: Word-level scoring
-4. Hindi_ASR_Q4.ipynb                                 ← Phase 4: Lattice WER evaluation
+1. Whisper_Model_training___evaluation.ipynb   ← Phase 1: Fine-tune & evaluate
+2. Hindi_ASR_Post_processing_NLP.ipynb         ← Phase 2: Cleanup pipeline
+3. Hindi_ASR_Word_Classification.ipynb         ← Phase 3: Word-level scoring
+4. Hindi_ASR_Lattice_Evaluation.ipynb          ← Phase 4: Lattice WER evaluation
 ```
 
 > **Note:** All notebooks are designed for **Google Colab with T4 GPU**. Mount your Google Drive before running.
@@ -356,18 +361,21 @@ cd Hindi-ASR-Whisper
 ## 📁 Repository Structure
 
 ```
-Hindi-ASR-Whisper/
+Speech-Audio-Research-Assignment/
+│
+├── 📊 FT Data - data.csv
+│       └── ~10 hours of Hindi conversational speech training data
 │
 ├── 📓 Whisper_Model_training___evaluation.ipynb
 │       └── Phase 1: Data preprocessing, fine-tuning, evaluation
 │
-├── 📓 Hindi_ASR_Q2_Post_processing___NLP_pipeline.ipynb
+├── 📓 Hindi_ASR_Post_processing_NLP.ipynb
 │       └── Phase 2: Number normalization, English word tagging
 │
-├── 📓 Hindi_ASR_Q3_Word_Classification.ipynb
+├── 📓 Hindi_ASR_Word_Classification.ipynb
 │       └── Phase 3: Rule-based word spelling classification
 │
-├── 📓 Hindi_ASR_Q4.ipynb
+├── 📓 Hindi_ASR_Lattice_Evaluation.ipynb
 │       └── Phase 4: Lattice construction & fair WER evaluation
 │
 └── 📋 README.md
